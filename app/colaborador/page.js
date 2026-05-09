@@ -356,7 +356,7 @@ export default function ColaboradorPage() {
       {/* SIDEBAR */}
       <aside className="sidebar">
         <div>
-          <div className="brand">AUTO CLEAN CR</div>
+          <img src="/logo-png.png" alt="AutoClean CR" className="logo" />
           <div className="role">COLABORADOR</div>
         </div>
         <div className="fecha-filtro">
@@ -426,6 +426,11 @@ export default function ColaboradorPage() {
 
         {boletaActiva && !cargandoBoleta && (
           <div className="detalle">
+            {/* LOGO */}
+            <div style={{ textAlign: 'center', marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid #1a1a1a' }}>
+              <img src="/logo-png.png" alt="AutoClean CR" style={{ height: '64px', objectFit: 'contain' }} />
+            </div>
+
             {/* ENCABEZADO */}
             <div className="detalle-header">
               <div>
@@ -852,7 +857,7 @@ export default function ColaboradorPage() {
           position: sticky;
           top: 0;
         }
-        .brand { color: #4FC3F7; font-size: 20px; font-weight: 900; }
+        .logo { height: 80px; object-fit: contain; display: block; margin-bottom: 4px; }
         .role { color: #555; font-size: 11px; letter-spacing: .2em; margin-top: 2px; }
         .fecha-filtro label { display: block; color: #777; font-size: 12px; margin-bottom: 6px; }
         .fecha-filtro input {

@@ -248,6 +248,16 @@ export default function AdminPage() {
     setBoletas(prev => prev.filter(b => b.cita?.id !== c.id))
   }
 
+  async function eliminarTodasPendientes(citasFiltradas) {
+    const pendientes = citasFiltradas.filter(c => c.estado === 'pendiente')
+    if (pendientes.length === 0) { alert('No hay citas pendientes para eliminar.'); return }
+    if (!confirm(`¿Eliminar ${pendientes.length} cita(s) pendiente(s)? Esta acción no se puede deshacer.`)) return
+    await Promise.all(pendientes.map(c => fetch(`/api/citas/${c.id}`, { method: 'DELETE' })))
+    const ids = new Set(pendientes.map(c => c.id))
+    setCitas(prev => prev.filter(c => !ids.has(c.id)))
+    setBoletas(prev => prev.filter(b => !ids.has(b.cita?.id)))
+  }
+
   // ── Boletas ─────────────────────────────────────────────
   async function eliminarBoleta(b) {
     if (!confirm(`¿Eliminar la boleta ${b.numero}? Esta acción no se puede deshacer.`)) return
@@ -284,7 +294,6 @@ export default function AdminPage() {
       <aside className="sidebar">
         <div>
           <img src="/logo-png.png" alt="AutoClean CR" className="logo" />
-          <div className="brand">AUTO CLEAN CR</div>
           <div className="role">ADMINISTRADOR</div>
         </div>
 
@@ -373,7 +382,17 @@ export default function AdminPage() {
               ) : citasFiltradas.length === 0 ? (
                 <p className="muted">No hay citas para mostrar.</p>
               ) : (
-                <div className="tabla-wrapper">
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+                    <button
+                      className="btn-accion-tabla eliminar"
+                      style={{ padding: '8px 16px', fontSize: '13px' }}
+                      onClick={() => eliminarTodasPendientes(citasFiltradas)}
+                    >
+                      Eliminar todas las pendientes ({citasFiltradas.filter(c => c.estado === 'pendiente').length})
+                    </button>
+                  </div>
+                  <div className="tabla-wrapper">
                   <table className="tabla">
                     <thead>
                       <tr>
@@ -418,6 +437,7 @@ export default function AdminPage() {
                       })}
                     </tbody>
                   </table>
+                </div>
                 </div>
               )}
             </div>
@@ -687,6 +707,9 @@ export default function AdminPage() {
         return (
           <div className="modal-overlay">
             <div className="modal">
+              <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                <img src="/logo-png.png" alt="AutoClean CR" style={{ height: '52px', objectFit: 'contain' }} />
+              </div>
               <h2>Tiempos — {b.numero}</h2>
               <p className="hint" style={{ marginTop: 0 }}>{b.cita?.fecha} · {b.perfil?.nombre || '—'}</p>
 
@@ -766,8 +789,7 @@ export default function AdminPage() {
           justify-content: space-between; position: sticky; top: 0; height: 100vh;
           overflow-y: auto;
         }
-        .logo { height: 70px; object-fit: contain; margin-bottom: 20px; display: block; }
-        .brand { color: #4FC3F7; font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+        .logo { height: 90px; object-fit: contain; margin-bottom: 16px; display: block; }
         .role { color: #666; font-size: 11px; letter-spacing: .2em; margin-bottom: 40px; }
         .menu { display: flex; flex-direction: column; gap: 8px; }
         .menu button {

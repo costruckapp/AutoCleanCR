@@ -599,6 +599,7 @@ export default function ClientePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          cita_id: citaNueva.id,
           titulo: `AutoClean · ${vehiculoSeleccionado?.marca} ${vehiculoSeleccionado?.modelo} (${vehiculoSeleccionado?.placa})`,
           fecha,
           hora,
@@ -636,8 +637,6 @@ export default function ClientePage() {
     <main className="page">
       <aside className="sidebar">
         <img src="/logo-png.png" alt="AutoClean CR" className="logo" />
-
-        <h2>AUTO CLEAN CR</h2>
         <p className="rol">CLIENTE</p>
 
         <nav>
@@ -1328,13 +1327,8 @@ export default function ClientePage() {
         }
 
         .logo {
-          height: 70px;
+          height: 90px;
           object-fit: contain;
-          margin-bottom: 16px;
-        }
-
-        .sidebar h2 {
-          font-size: 30px;
           margin-bottom: 8px;
         }
 

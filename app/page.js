@@ -139,23 +139,8 @@ export default async function Home({ searchParams }) {
         }
 
         .brand img {
-          height: 36px;
+          height: 52px;
           object-fit: contain;
-        }
-
-        .brand-title {
-          color: ${cyan};
-          font-size: 18px;
-          font-weight: 800;
-          letter-spacing: .1em;
-          line-height: 1;
-        }
-
-        .brand-sub {
-          color: #555;
-          font-size: 7px;
-          letter-spacing: .2em;
-          text-transform: uppercase;
         }
 
         .desktop-menu {
@@ -550,11 +535,6 @@ export default async function Home({ searchParams }) {
         <div className="nav-inner">
           <div className="brand">
             <img src="/logo-png.png" alt="AutoClean CR" />
-
-            <div>
-              <div className="brand-title">AUTO CLEAN CR</div>
-              <div className="brand-sub">Car Studio · Detailing</div>
-            </div>
           </div>
 
           <details>

@@ -458,6 +458,16 @@ export default function ColaboradorPage() {
                 <div className="info-linea">{boletaActiva.perfil?.nombre || '—'}</div>
                 <div className="info-linea muted">{boletaActiva.perfil?.telefono || '—'}</div>
                 <div className="info-linea muted">{boletaActiva.perfil?.email || '—'}</div>
+                {boletaActiva.perfil?.telefono && (
+                  <a
+                    href={`https://wa.me/506${boletaActiva.perfil.telefono.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-whatsapp"
+                  >
+                    WhatsApp
+                  </a>
+                )}
               </div>
               <div className="info-card">
                 <div className="info-card-title">Vehículo</div>
@@ -932,6 +942,11 @@ export default function ColaboradorPage() {
         .info-card-title { color: #4FC3F7; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
         .info-linea { font-size: 14px; margin-bottom: 4px; }
         .muted { color: #666; font-size: 13px; }
+        .btn-whatsapp {
+          display: inline-block; margin-top: 10px;
+          background: #25D366; color: #000; font-weight: 700; font-size: 13px;
+          padding: 7px 16px; border-radius: 8px; text-decoration: none;
+        }
 
         .seccion {
           background: #111; border: 1px solid #1f1f1f; border-radius: 14px;

@@ -593,6 +593,32 @@ export default function ClientePage() {
       console.error('Error al crear boleta:', e.message)
     }
 
+    // Notificar a N8N → Kommo (no bloquea si falla)
+    try {
+      const n8nCitaUrl = process.env.NEXT_PUBLIC_N8N_NUEVA_CITA
+      if (n8nCitaUrl) {
+        await fetch(n8nCitaUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cita_id: citaNueva.id,
+            cliente_nombre: perfil?.nombre || '',
+            cliente_telefono: perfil?.telefono || '',
+            cliente_email: perfil?.email || '',
+            fecha,
+            hora,
+            servicios: resumenServicios.seleccionados.map((s) => s.nombre).join(', '),
+            vehiculo: `${vehiculoSeleccionado?.marca || ''} ${vehiculoSeleccionado?.modelo || ''} (${vehiculoSeleccionado?.placa || ''})`,
+            placa: vehiculoSeleccionado?.placa || '',
+            modalidad: 'domicilio',
+            direccion: `${distritoCita}, ${cantonCita}, ${provinciaCita}`,
+          }),
+        })
+      }
+    } catch (e) {
+      console.error('Error notificando a N8N (cita nueva):', e.message)
+    }
+
     // Crear evento en Google Calendar (no bloquea si falla)
     try {
       await fetch('/api/evento-calendario', {

@@ -153,6 +153,15 @@ export default function ClientePage() {
   const [cargandoSlots, setCargandoSlots] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
+  const [mostrarFormVehiculoCita, setMostrarFormVehiculoCita] = useState(false)
+  const [vincularVehiculoCita, setVincularVehiculoCita] = useState(true)
+  const [marcaNC, setMarcaNC] = useState('')
+  const [modeloNC, setModeloNC] = useState('')
+  const [anioNC, setAnioNC] = useState('')
+  const [placaNC, setPlacaNC] = useState('')
+  const [colorNC, setColorNC] = useState('')
+  const [tipoNC, setTipoNC] = useState('Sedan')
+
   const [citaEditando, setCitaEditando] = useState(null)
   const [fechaEdit, setFechaEdit] = useState('')
   const [horaEdit, setHoraEdit] = useState('')
@@ -214,6 +223,16 @@ export default function ClientePage() {
       duracion: seleccionados.reduce((sum, s) => sum + Number(s.duracion_minutos || 0), 0),
     }
   }, [servicios, serviciosEditCita])
+
+  const distritosParaCita = useMemo(() => {
+    if (!provinciaCita || !cantonCita) return []
+    return UBICACIONES[provinciaCita]?.[cantonCita] || []
+  }, [provinciaCita, cantonCita])
+
+  const distritosParaEditCita = useMemo(() => {
+    if (!provinciaEditCita || !cantonEditCita) return []
+    return UBICACIONES[provinciaEditCita]?.[cantonEditCita] || []
+  }, [provinciaEditCita, cantonEditCita])
 
   const resumenServicios = useMemo(() => {
     const seleccionados = servicios.filter((s) =>
@@ -481,6 +500,10 @@ export default function ClientePage() {
   function abrirCita() {
     if (vehiculos.length > 0) {
       setVehiculoId(vehiculos[0].id)
+      setMostrarFormVehiculoCita(false)
+    } else {
+      setVehiculoId('')
+      setMostrarFormVehiculoCita(true)
     }
 
     setServiciosSeleccionados([])
@@ -488,6 +511,13 @@ export default function ClientePage() {
     setHora('')
     setNotasCita('')
     setSlotsDisponibles([])
+    setMarcaNC('')
+    setModeloNC('')
+    setAnioNC('')
+    setPlacaNC('')
+    setColorNC('')
+    setTipoNC('Sedan')
+    setVincularVehiculoCita(true)
 
     setProvinciaCita(perfil?.provincia || '')
     setCantonCita(perfil?.canton || '')
@@ -497,8 +527,41 @@ export default function ClientePage() {
     setMostrarCita(true)
   }
 
-  async function consultarDisponibilidad() {
-    if (!fecha) return
+  async function guardarVehiculoNuevoCita() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    if (!marcaNC || !modeloNC || !placaNC) {
+      alert('Completá al menos marca, modelo y placa.')
+      return
+    }
+    const { data: nuevoVeh, error } = await supabase.from('vehiculos').insert([{
+      cliente_id: user.id,
+      marca: marcaNC,
+      modelo: modeloNC,
+      anio: anioNC,
+      placa: placaNC,
+      color: colorNC,
+      tipo: tipoNC,
+    }]).select().single()
+
+    if (error) { alert(error.message); return }
+
+    if (vincularVehiculoCita) {
+      setVehiculos(prev => [nuevoVeh, ...prev])
+    }
+    setVehiculoId(nuevoVeh.id)
+    setMostrarFormVehiculoCita(false)
+    setMarcaNC('')
+    setModeloNC('')
+    setAnioNC('')
+    setPlacaNC('')
+    setColorNC('')
+    setTipoNC('Sedan')
+  }
+
+  async function consultarDisponibilidad(fechaParam) {
+    const f = fechaParam ?? fecha
+    if (!f) return
     setCargandoSlots(true)
     setSlotsDisponibles([])
     setHora('')
@@ -508,7 +571,7 @@ export default function ClientePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fecha,
+          fecha: f,
           provincia: provinciaCita,
           canton: cantonCita,
           direccion: direccionCita,
@@ -1076,21 +1139,58 @@ export default function ClientePage() {
           <div className="modal modal-cita">
             <h2>Agendar cita a domicilio</h2>
 
-            <select
-              value={vehiculoId}
-              onChange={(e) => {
-                setVehiculoId(e.target.value)
-                setServiciosSeleccionados([])
-              }}
-            >
-              <option value="">Seleccionar vehículo</option>
+            {vehiculos.length > 0 && (
+              <select
+                value={vehiculoId}
+                onChange={(e) => {
+                  setVehiculoId(e.target.value)
+                  setServiciosSeleccionados([])
+                }}
+              >
+                <option value="">Seleccionar vehículo</option>
+                {vehiculos.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.marca} {v.modelo} - {v.placa} / {v.tipo}
+                  </option>
+                ))}
+              </select>
+            )}
 
-              {vehiculos.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.marca} {v.modelo} - {v.placa} / {v.tipo}
-                </option>
-              ))}
-            </select>
+            {!mostrarFormVehiculoCita ? (
+              <button
+                type="button"
+                className="agregar-vehiculo-btn"
+                onClick={() => setMostrarFormVehiculoCita(true)}
+              >
+                + Agregar vehículo nuevo
+              </button>
+            ) : (
+              <div className="mini-vehicle-form">
+                <h4>Nuevo vehículo</h4>
+                <input placeholder="Marca *" value={marcaNC} onChange={(e) => setMarcaNC(e.target.value)} />
+                <input placeholder="Modelo *" value={modeloNC} onChange={(e) => setModeloNC(e.target.value)} />
+                <input placeholder="Año" value={anioNC} onChange={(e) => setAnioNC(e.target.value)} />
+                <input placeholder="Placa *" value={placaNC} onChange={(e) => setPlacaNC(e.target.value)} />
+                <input placeholder="Color" value={colorNC} onChange={(e) => setColorNC(e.target.value)} />
+                <select value={tipoNC} onChange={(e) => setTipoNC(e.target.value)}>
+                  {tiposVehiculo.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={vincularVehiculoCita}
+                    onChange={(e) => setVincularVehiculoCita(e.target.checked)}
+                  />
+                  Guardar en mi cuenta para futuras citas
+                </label>
+                <div className="mini-actions">
+                  <button type="button" onClick={guardarVehiculoNuevoCita}>Guardar y continuar</button>
+                  {vehiculos.length > 0 && (
+                    <button type="button" onClick={() => setMostrarFormVehiculoCita(false)}>Cancelar</button>
+                  )}
+                </div>
+              </div>
+            )}
 
             {vehiculoSeleccionado && (
               <div className="hint">
@@ -1155,19 +1255,18 @@ export default function ClientePage() {
                 type="date"
                 className="date-overlay"
                 value={fecha}
-                onChange={(e) => { setFecha(e.target.value); setSlotsDisponibles([]); setHora('') }}
+                onChange={(e) => {
+                  const v = e.target.value
+                  setFecha(v)
+                  setSlotsDisponibles([])
+                  setHora('')
+                  if (v) consultarDisponibilidad(v)
+                }}
               />
             </div>
 
-            {fecha && (
-              <button
-                type="button"
-                className="consultar-btn"
-                onClick={consultarDisponibilidad}
-                disabled={cargandoSlots}
-              >
-                {cargandoSlots ? 'Consultando disponibilidad...' : 'Ver horarios disponibles'}
-              </button>
+            {cargandoSlots && (
+              <div className="cargando-slots">Consultando disponibilidad...</div>
             )}
 
             {slotsDisponibles.length > 0 && (
@@ -1215,12 +1314,13 @@ export default function ClientePage() {
               </select>
 
               <select
+                key={`dist-cita-${cantonCita}`}
                 value={distritoCita}
                 onChange={(e) => setDistritoCita(e.target.value)}
                 disabled={!cantonCita}
               >
                 <option value="">Seleccionar distrito</option>
-                {provinciaCita && cantonCita && (UBICACIONES[provinciaCita]?.[cantonCita] || []).map((d) => (
+                {distritosParaCita.map((d) => (
                   <option key={d} value={d}>{d}</option>
                 ))}
               </select>
@@ -1316,12 +1416,13 @@ export default function ClientePage() {
               </select>
 
               <select
+                key={`dist-edit-${cantonEditCita}`}
                 value={distritoEditCita}
                 onChange={(e) => setDistritoEditCita(e.target.value)}
                 disabled={!cantonEditCita}
               >
                 <option value="">Seleccionar distrito</option>
-                {provinciaEditCita && cantonEditCita && (UBICACIONES[provinciaEditCita]?.[cantonEditCita] || []).map((d) => (
+                {distritosParaEditCita.map((d) => (
                   <option key={d} value={d}>{d}</option>
                 ))}
               </select>
@@ -1809,6 +1910,71 @@ export default function ClientePage() {
           padding: 0;
           border: none;
           background: transparent;
+        }
+
+        .cargando-slots {
+          color: #777;
+          font-size: 14px;
+          text-align: center;
+          padding: 10px;
+        }
+
+        .agregar-vehiculo-btn {
+          background: transparent;
+          border: 1px dashed #444;
+          color: #777;
+          padding: 12px;
+          border-radius: 12px;
+          cursor: pointer;
+          width: 100%;
+          font-size: 14px;
+          text-align: center;
+        }
+
+        .agregar-vehiculo-btn:hover {
+          border-color: #4FC3F7;
+          color: #4FC3F7;
+        }
+
+        .mini-vehicle-form {
+          background: #161616;
+          border: 1px solid #2a2a2a;
+          border-radius: 14px;
+          padding: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .mini-vehicle-form h4 {
+          color: #4FC3F7;
+          font-size: 14px;
+          margin: 0 0 4px;
+        }
+
+        .mini-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 4px;
+        }
+
+        .mini-actions button {
+          flex: 1;
+          padding: 11px;
+          border-radius: 10px;
+          border: none;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .mini-actions button:first-child {
+          background: #4FC3F7;
+          color: black;
+        }
+
+        .mini-actions button:last-child {
+          background: #222;
+          color: white;
         }
 
         .sin-slots {

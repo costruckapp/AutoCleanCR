@@ -1909,12 +1909,10 @@ export default function ClientePage() {
 
         .date-overlay {
           position: absolute;
-          inset: 0;
           opacity: 0;
-          cursor: pointer;
-          width: 100%;
-          height: 100%;
-          padding: 0;
+          pointer-events: none;
+          width: 1px;
+          height: 1px;
           border: none;
           background: transparent;
         }

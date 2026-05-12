@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
@@ -116,6 +116,7 @@ export default function ClientePage() {
 
   const [mostrarVehiculo, setMostrarVehiculo] = useState(false)
   const [mostrarCita, setMostrarCita] = useState(false)
+  const dateInputRef = useRef(null)
 
   const [marca, setMarca] = useState('')
   const [modelo, setModelo] = useState('')
@@ -1244,7 +1245,7 @@ export default function ClientePage() {
               </div>
             </div>
 
-            <div className="date-field">
+            <div className="date-field" onClick={() => dateInputRef.current?.showPicker()}>
               <span className="date-value">
                 {fecha ? fecha.split('-').reverse().join('/') : 'Seleccionar fecha'}
               </span>
@@ -1257,6 +1258,7 @@ export default function ClientePage() {
                 </svg>
               </div>
               <input
+                ref={dateInputRef}
                 type="date"
                 className="date-overlay"
                 value={fecha}

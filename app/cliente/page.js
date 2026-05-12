@@ -151,6 +151,7 @@ export default function ClientePage() {
 
   const [slotsDisponibles, setSlotsDisponibles] = useState([])
   const [cargandoSlots, setCargandoSlots] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   const [citaEditando, setCitaEditando] = useState(null)
   const [fechaEdit, setFechaEdit] = useState('')
@@ -525,6 +526,7 @@ export default function ClientePage() {
   }
 
   async function guardarCita() {
+    if (submitting) return
     const {
       data: { user },
     } = await supabase.auth.getUser()
@@ -535,6 +537,8 @@ export default function ClientePage() {
       alert('Seleccioná vehículo, al menos un servicio, fecha y hora.')
       return
     }
+
+    setSubmitting(true)
 
     const { data: citaNueva, error: citaError } = await supabase
       .from('citas')
@@ -559,6 +563,7 @@ export default function ClientePage() {
 
     if (citaError) {
       alert(citaError.message)
+      setSubmitting(false)
       return
     }
 
@@ -577,6 +582,7 @@ export default function ClientePage() {
 
     if (serviciosError) {
       alert(serviciosError.message)
+      setSubmitting(false)
       return
     }
 
@@ -647,6 +653,7 @@ export default function ClientePage() {
     setHora('')
     setNotasCita('')
     setSlotsDisponibles([])
+    setSubmitting(false)
 
     cargarDatos()
   }
@@ -1132,11 +1139,24 @@ export default function ClientePage() {
               </div>
             </div>
 
-            <input
-              type="date"
-              value={fecha}
-              onChange={(e) => { setFecha(e.target.value); setSlotsDisponibles([]); setHora('') }}
-            />
+            <div className="date-field">
+              <span className="date-value">
+                {fecha ? fecha.split('-').reverse().join('/') : 'Seleccionar fecha'}
+              </span>
+              <div className="date-icon-area">
+                <svg width="20" height="20" fill="none" stroke="#999" strokeWidth="2" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <input
+                  type="date"
+                  value={fecha}
+                  onChange={(e) => { setFecha(e.target.value); setSlotsDisponibles([]); setHora('') }}
+                />
+              </div>
+            </div>
 
             {fecha && (
               <button
@@ -1218,8 +1238,8 @@ export default function ClientePage() {
             />
 
             <div className="modal-actions">
-              <button onClick={guardarCita}>
-                Solicitar cita
+              <button onClick={guardarCita} disabled={submitting}>
+                {submitting ? 'Guardando...' : 'Solicitar cita'}
               </button>
 
               <button
@@ -1747,6 +1767,45 @@ export default function ClientePage() {
         .consultar-btn:hover:not(:disabled) {
           background: #4FC3F7;
           color: black;
+        }
+
+        .date-field {
+          background: #1a1a1a;
+          border: 1px solid #333;
+          border-radius: 12px;
+          padding: 14px 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          color: white;
+        }
+
+        .date-value {
+          color: #ccc;
+          font-size: 15px;
+        }
+
+        .date-icon-area {
+          position: relative;
+          width: 34px;
+          height: 34px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+
+        .date-icon-area input[type="date"] {
+          position: absolute;
+          inset: 0;
+          opacity: 0;
+          cursor: pointer;
+          width: 100%;
+          height: 100%;
+          padding: 0;
+          border: none;
+          background: transparent;
         }
 
         .sin-slots {

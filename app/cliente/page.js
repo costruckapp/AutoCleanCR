@@ -1150,12 +1150,13 @@ export default function ClientePage() {
                   <line x1="8" y1="2" x2="8" y2="6"/>
                   <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
-                <input
-                  type="date"
-                  value={fecha}
-                  onChange={(e) => { setFecha(e.target.value); setSlotsDisponibles([]); setHora('') }}
-                />
               </div>
+              <input
+                type="date"
+                className="date-overlay"
+                value={fecha}
+                onChange={(e) => { setFecha(e.target.value); setSlotsDisponibles([]); setHora('') }}
+              />
             </div>
 
             {fecha && (
@@ -1778,25 +1779,27 @@ export default function ClientePage() {
           align-items: center;
           justify-content: space-between;
           color: white;
+          position: relative;
+          cursor: pointer;
         }
 
         .date-value {
           color: #ccc;
           font-size: 15px;
+          pointer-events: none;
         }
 
         .date-icon-area {
-          position: relative;
           width: 34px;
           height: 34px;
           display: flex;
           align-items: center;
           justify-content: center;
-          cursor: pointer;
           flex-shrink: 0;
+          pointer-events: none;
         }
 
-        .date-icon-area input[type="date"] {
+        .date-overlay {
           position: absolute;
           inset: 0;
           opacity: 0;

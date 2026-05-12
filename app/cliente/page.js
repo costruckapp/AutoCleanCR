@@ -462,9 +462,10 @@ export default function ClientePage() {
       return
     }
 
-    const { error: citaError } = await supabase
-      .from('citas')
-      .update({
+    const patchRes = await fetch(`/api/citas/${citaEditando.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         fecha: fechaEdit,
         hora: horaEdit,
         provincia: provinciaEditCita,
@@ -472,11 +473,11 @@ export default function ClientePage() {
         distrito: distritoEditCita,
         direccion_detallada: direccionEditCita,
         notas: notasEditCita,
-      })
-      .eq('id', citaEditando.id)
-
-    if (citaError) {
-      alert(citaError.message)
+      }),
+    })
+    const patchJson = await patchRes.json()
+    if (patchJson.error) {
+      alert(patchJson.error)
       return
     }
 
@@ -690,7 +691,7 @@ export default function ClientePage() {
 
     // Crear evento en Google Calendar (no bloquea si falla)
     try {
-      await fetch('/api/evento-calendario', {
+      const calRes = await fetch('/api/evento-calendario', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -703,6 +704,10 @@ export default function ClientePage() {
           ubicacion: `${distritoCita}, ${cantonCita}, ${provinciaCita}, Costa Rica`,
         }),
       })
+      if (!calRes.ok) {
+        const calErr = await calRes.json().catch(() => ({}))
+        console.error('Error al crear evento en calendario:', calErr.error || calRes.status)
+      }
     } catch (e) {
       console.error('Error al crear evento en calendario:', e.message)
     }

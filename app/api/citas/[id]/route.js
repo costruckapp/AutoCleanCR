@@ -64,8 +64,10 @@ export async function DELETE(req, { params }) {
       try {
         await eliminarEvento(cita.google_event_id)
       } catch (e) {
-        console.error('Error eliminando evento de Calendar:', e.message)
+        console.error('Error eliminando evento de Calendar:', cita.google_event_id, e.message)
       }
+    } else {
+      console.warn('Cita sin google_event_id, no se eliminó de Calendar. cita_id:', id)
     }
 
     await supabaseAdmin.from('cita_servicios').delete().eq('cita_id', id)

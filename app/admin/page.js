@@ -166,7 +166,7 @@ export default function AdminPage() {
     setGuardandoEdit(true)
     const body = { nombre: editNombre, telefono: editTelefono, notas_admin: editNotas }
     if (esColaborador(usuarioEditando) && editUsuario.trim()) body.nuevo_usuario = editUsuario.trim()
-    if (esColaborador(usuarioEditando) && editClave.trim()) body.nueva_clave = editClave.trim()
+    if (editClave.trim()) body.nueva_clave = editClave.trim()
     const res = await fetch(`/api/usuarios/${usuarioEditando.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -662,18 +662,23 @@ export default function AdminPage() {
             )}
 
             {!esColaborador(usuarioEditando) && (
-              <div style={{ marginTop: '20px', padding: '14px', background: '#1a1a1a', borderRadius: '10px', border: '1px solid #2a2a2a' }}>
-                <p style={{ margin: '0 0 10px', fontSize: '13px', color: '#aaa' }}>
-                  El cliente puede recuperar su clave desde el correo registrado.
-                </p>
-                <button
-                  className="btn-reset"
-                  onClick={() => enviarResetPassword(usuarioEditando)}
-                  disabled={enviandoReset}
-                >
-                  {enviandoReset ? 'Enviando...' : 'Enviar email de recuperación'}
-                </button>
-              </div>
+              <>
+                <label>Nueva contraseña</label>
+                <input type="password" value={editClave} onChange={e => setEditClave(e.target.value)} placeholder="Dejá vacío para no cambiar" />
+
+                <div style={{ marginTop: '16px', padding: '14px', background: '#1a1a1a', borderRadius: '10px', border: '1px solid #2a2a2a' }}>
+                  <p style={{ margin: '0 0 10px', fontSize: '13px', color: '#aaa' }}>
+                    O el cliente puede recuperar su clave desde el correo registrado.
+                  </p>
+                  <button
+                    className="btn-reset"
+                    onClick={() => enviarResetPassword(usuarioEditando)}
+                    disabled={enviandoReset}
+                  >
+                    {enviandoReset ? 'Enviando...' : 'Enviar email de recuperación'}
+                  </button>
+                </div>
+              </>
             )}
 
             <div className="modal-acciones">

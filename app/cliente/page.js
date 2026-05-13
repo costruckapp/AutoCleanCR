@@ -1865,6 +1865,7 @@ export default function ClientePage() {
         }
 
         .fecha-input {
+          position: relative;
           width: 100%;
           background: #1a1a1a;
           border: 1px solid #333;
@@ -1877,7 +1878,14 @@ export default function ClientePage() {
         }
 
         .fecha-input::-webkit-calendar-picker-indicator {
-          filter: invert(1);
+          position: absolute;
+          left: 0;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          width: auto;
+          height: auto;
+          opacity: 0;
           cursor: pointer;
         }
 

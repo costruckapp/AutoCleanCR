@@ -15,6 +15,14 @@ export default function UsuariosAdmin() {
   const [notas, setNotas] = useState('')
   const [guardando, setGuardando] = useState(false)
 
+  const [editando, setEditando] = useState(null)
+  const [editNombre, setEditNombre] = useState('')
+  const [editUsuario, setEditUsuario] = useState('')
+  const [editPassword, setEditPassword] = useState('')
+  const [editRol, setEditRol] = useState('colaborador')
+  const [editNotas, setEditNotas] = useState('')
+  const [guardandoEdit, setGuardandoEdit] = useState(false)
+
   useEffect(() => {
     cargarUsuarios()
   }, [])
@@ -74,6 +82,37 @@ export default function UsuariosAdmin() {
     setRol('colaborador')
     setNotas('')
 
+    cargarUsuarios()
+  }
+
+  function abrirEditar(u) {
+    setEditando(u)
+    setEditNombre(u.nombre || '')
+    setEditUsuario(u.correo?.replace('@autocleancr.local', '') || '')
+    setEditPassword('')
+    setEditRol(u.rol || 'colaborador')
+    setEditNotas(u.notas_admin || '')
+  }
+
+  async function guardarEdicion() {
+    if (!editNombre) { alert('El nombre es obligatorio.'); return }
+    setGuardandoEdit(true)
+    const body = {
+      nombre: editNombre,
+      nuevo_usuario: editUsuario,
+      rol: editRol,
+      notas_admin: editNotas,
+    }
+    if (editPassword) body.nueva_clave = editPassword
+    const res = await fetch(`/api/usuarios/${editando.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const data = await res.json()
+    setGuardandoEdit(false)
+    if (data.error) { alert(data.error); return }
+    setEditando(null)
     cargarUsuarios()
   }
 
@@ -152,6 +191,13 @@ export default function UsuariosAdmin() {
               <div className="acciones">
                 <button
                   className="accion"
+                  onClick={() => abrirEditar(usuarioItem)}
+                >
+                  Editar
+                </button>
+
+                <button
+                  className="accion"
                   onClick={() =>
                     bloquearUsuario(
                       usuarioItem.id,
@@ -160,15 +206,6 @@ export default function UsuariosAdmin() {
                   }
                 >
                   {usuarioItem.activo ? 'Bloquear' : 'Activar'}
-                </button>
-
-                <button
-                  className="accion"
-                  onClick={() =>
-                    alert(usuarioItem.notas_admin || 'Sin notas internas')
-                  }
-                >
-                  Notas
                 </button>
               </div>
             </div>
@@ -236,6 +273,55 @@ export default function UsuariosAdmin() {
                 className="cancelar"
                 onClick={() => setMostrarModal(false)}
               >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editando && (
+        <div className="modal-bg">
+          <div className="modal">
+            <h2>Editar usuario</h2>
+
+            <label>Nombre</label>
+            <input
+              value={editNombre}
+              onChange={(e) => setEditNombre(e.target.value)}
+            />
+
+            <label>Usuario</label>
+            <input
+              value={editUsuario}
+              onChange={(e) => setEditUsuario(e.target.value)}
+            />
+
+            <label>Nueva contraseña (dejar vacío para no cambiar)</label>
+            <input
+              type="password"
+              placeholder="Nueva contraseña"
+              value={editPassword}
+              onChange={(e) => setEditPassword(e.target.value)}
+            />
+
+            <label>Rol</label>
+            <select value={editRol} onChange={(e) => setEditRol(e.target.value)}>
+              <option value="colaborador">Colaborador</option>
+              <option value="admin">Administrador</option>
+            </select>
+
+            <label>Notas internas</label>
+            <textarea
+              value={editNotas}
+              onChange={(e) => setEditNotas(e.target.value)}
+            />
+
+            <div className="modal-actions">
+              <button onClick={guardarEdicion} disabled={guardandoEdit}>
+                {guardandoEdit ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+              <button className="cancelar" onClick={() => setEditando(null)}>
                 Cancelar
               </button>
             </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
@@ -116,7 +116,6 @@ export default function ClientePage() {
 
   const [mostrarVehiculo, setMostrarVehiculo] = useState(false)
   const [mostrarCita, setMostrarCita] = useState(false)
-  const dateInputRef = useRef(null)
 
   const [marca, setMarca] = useState('')
   const [modelo, setModelo] = useState('')
@@ -1245,32 +1244,19 @@ export default function ClientePage() {
               </div>
             </div>
 
-            <div className="date-field">
-              <span className="date-value">
-                {fecha ? fecha.split('-').reverse().join('/') : 'Seleccionar fecha'}
-              </span>
-              <div className="date-icon-area">
-                <svg width="20" height="20" fill="none" stroke="#999" strokeWidth="2" viewBox="0 0 24 24">
-                  <rect x="3" y="4" width="18" height="18" rx="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-              </div>
-              <input
-                ref={dateInputRef}
-                type="date"
-                className="date-overlay"
-                value={fecha}
-                onChange={(e) => {
-                  const v = e.target.value
-                  setFecha(v)
-                  setSlotsDisponibles([])
-                  setHora('')
-                  if (v) consultarDisponibilidad(v)
-                }}
-              />
-            </div>
+            <input
+              type="date"
+              className="fecha-input"
+              value={fecha}
+              min={new Date().toISOString().split('T')[0]}
+              onChange={(e) => {
+                const v = e.target.value
+                setFecha(v)
+                setSlotsDisponibles([])
+                setHora('')
+                if (v) consultarDisponibilidad(v)
+              }}
+            />
 
             {cargandoSlots && (
               <div className="cargando-slots">Consultando disponibilidad...</div>
@@ -1878,45 +1864,21 @@ export default function ClientePage() {
           color: black;
         }
 
-        .date-field {
+        .fecha-input {
+          width: 100%;
           background: #1a1a1a;
           border: 1px solid #333;
           border-radius: 12px;
           padding: 14px 16px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
           color: white;
-          position: relative;
-          cursor: pointer;
-        }
-
-        .date-value {
-          color: #ccc;
           font-size: 15px;
-          pointer-events: none;
-        }
-
-        .date-icon-area {
-          width: 34px;
-          height: 34px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          pointer-events: none;
-        }
-
-        .date-overlay {
-          position: absolute;
-          inset: 0;
-          opacity: 0;
-          width: 100%;
-          height: 100%;
           cursor: pointer;
-          border: none;
-          background: transparent;
-          z-index: 1;
+          box-sizing: border-box;
+        }
+
+        .fecha-input::-webkit-calendar-picker-indicator {
+          filter: invert(1);
+          cursor: pointer;
         }
 
         .cargando-slots {
